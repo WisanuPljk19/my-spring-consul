@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: default
+  labels:
+    app: my-consul-api-service
+  name: my-consul-api-service
+spec:
+  type: NodePort
+  ports:
+    - port: 8080
+      targetPort: 8080
+      nodePort: 31001
+      name: my-consul-api
+  selector:
+    app: my-consul-api-pod
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: default
+  name: my-consul-api-pod
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: my-consul-api-pod
+  template:
+    metadata:
+      labels:
+        app: my-consul-api-pod
+    spec:
+      volumes:
+        - name: volume-configmap
+          configMap:
+            name: config-my-consul-api
+      containers:
+        - name: my-consul-api
+          image: my-spring-consul:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          env:
+            - name: JAVA_OPTS
+              value: |-
+                -Xms64m -Xmx512m -XX:MetaspaceSize=96M -XX:MaxMetaspaceSize=256m
+            - name: TIME_ZONE
+              value: "-Dlogback.timezone=Asia/Bangkok"
+          volumeMounts:
+            - name: volume-configmap
+              mountPath: /home
+      securityContext: {}
+      terminationGracePeriodSeconds: 30

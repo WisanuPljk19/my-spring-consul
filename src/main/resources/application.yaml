@@ -1,0 +1,22 @@
+spring:
+  config:
+    import: consul:localhost:31433
+  cloud:
+    consul:
+      host: localhost
+      port: 31433
+      config:
+        enabled: true
+        defaultContext: config
+        data-key: data
+        profileSeparator: '::'
+        format: yaml
+        prefixes:
+          - product
+          - connect
+      discovery:
+        instanceId: ${spring.application.name}:${random.value}
+  application:
+    name: my-consul-api
+server:
+  port: 8080
